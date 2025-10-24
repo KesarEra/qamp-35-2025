@@ -22,4 +22,7 @@ See original proposal: https://github.com/qiskit-advocate/qamp-2025/issues/35
 
 ### Minimal Viable Product (MVP):
 
-Parsing a restricted set of OpenQASM circuits (≤3 qubits, basic gates), importing them into Lean, and proving equivalence for simple identities (e.g., H;H ≡ I, Euler decompositions, CNOT identities).
+The expected outcome of this project is a **fully functional Quantum Circuit Equivalence Checker built in Lean**, where one could input two OpenQASM 3.0 circuit files—whether they involve one, two, or three qubits—and instantly receive a formal verdict on whether the circuits are equivalent up to a global phase. The tool would provide both **symbolic proofs inside Lean** (for small Clifford+T circuits) and **numerical verification** (for larger, approximate cases), all through a simple command-line interface. The system would show intermediate steps like normalization, rewriting, and canonical decomposition, making it not only a checker but also an **educational and debugging companion** for quantum programmers. If fully realized, this project would mark one of the first end-to-end pipelines bridging **formal verification in Lean** with **quantum circuit semantics**, enabling trustworthy reasoning about real OpenQASM programs.
+In the future, it needs to be extended toward **n-qubit generalization** with scalable data structures (e.g., tensor networks or ZX-calculus representations), **integration with Qiskit and OpenQASM simulators**, and **support for approximate or noisy circuits** where unitary equivalence must tolerate physical errors. Long-term, the vision is to evolve it into a **certified quantum compiler verification toolchain**, connecting formal proofs to real hardware-level implementations.
+
+
