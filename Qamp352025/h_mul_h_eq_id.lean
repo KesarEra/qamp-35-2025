@@ -1,6 +1,9 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Sqrt
 
+set_option trace.Meta.isDefEq true in
+set_option trace.Meta.synthInstance true in
+
 -- Define 2x2 matrices manually
 structure Matrix2x2 (α : Type) where
   a00 : α
