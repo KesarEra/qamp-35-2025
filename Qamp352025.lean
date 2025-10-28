@@ -1,1 +1,1 @@
-import Qamp352025.Basic
+import Qamp352025.CoreTypes
