@@ -1,229 +1,99 @@
-import Mathlib.Data.Complex.Basic
-import Mathlib.Analysis.Complex.Exponential
+import Qamp352025.SingleQubitGateDefinitions
 import Mathlib.Data.Matrix.Basic
-import Mathlib.Data.Fin.Basic
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
+import Mathlib.Data.Complex.Basic
+import Mathlib.Data.Real.Sqrt
+import Mathlib.Tactic
 
 /-!
-# Single-Qubit Gate Proofs
+# Proof that H · H = I using SingleQubitGateDefinitions
 
-This file contains proofs about single-qubit quantum gates.
-
-## Main theorems
-
-* `hadamard_involution`: Proves that H ; H = I (Hadamard is self-inverse)
-* Helper lemmas for matrix arithmetic with complex numbers
-
+This file proves that applying the Hadamard gate twice yields the identity matrix,
+using the gate definitions from SingleQubitGateDefinitions.lean.
 -/
 
--- Redefine the types and functions from Gate1.lean
--- (In a real project, you would import Gate1.lean instead)
+open Gate1 Matrix Complex
 
-abbrev Mat2 := Matrix (Fin 2) (Fin 2) ℂ
-
-inductive Gate1 where
-  | I : Gate1
-  | X : Gate1
-  | Y : Gate1
-  | Z : Gate1
-  | H : Gate1
-  | S : Gate1
-  | T : Gate1
-  | Sdg : Gate1
-  | Tdg : Gate1
-  | Rx (θ : ℝ) : Gate1
-  | Ry (θ : ℝ) : Gate1
-  | Rz (θ : ℝ) : Gate1
-  | P (φ : ℝ) : Gate1
-
-def Circ1 := List Gate1
-
-namespace Gate1
-
-open Complex Matrix Real
-
-local notation "𝕚" => Complex.I
-
-noncomputable def toMatrix : Gate1 → Mat2
-  | I => Matrix.of ![![1, 0],
-                      ![0, 1]]
-  | X => Matrix.of ![![0, 1],
-                      ![1, 0]]
-  | Y => Matrix.of ![![0, -𝕚],
-                      ![𝕚, 0]]
-  | Z => Matrix.of ![![1, 0],
-                      ![0, -1]]
-  | H => let s := 1 / Real.sqrt 2
-         Matrix.of ![![s, s],
-                      ![s, -s]]
-  | S => Matrix.of ![![1, 0],
-                      ![0, 𝕚]]
-  | T => let t := Complex.exp (𝕚 * π / 4)
-         Matrix.of ![![1, 0],
-                      ![0, t]]
-  | Sdg => Matrix.of ![![1, 0],
-                        ![0, -𝕚]]
-  | Tdg => let t := Complex.exp (-𝕚 * π / 4)
-           Matrix.of ![![1, 0],
-                        ![0, t]]
-  | Rx θ => let c := Real.cos (θ / 2)
-            let s := Real.sin (θ / 2)
-            Matrix.of ![![c, -𝕚 * s],
-                        ![-𝕚 * s, c]]
-  | Ry θ => let c := Real.cos (θ / 2)
-            let s := Real.sin (θ / 2)
-            Matrix.of ![![c, -s],
-                        ![s, c]]
-  | Rz θ => let e_neg := Complex.exp (-𝕚 * (θ / 2))
-            let e_pos := Complex.exp (𝕚 * (θ / 2))
-            Matrix.of ![![e_neg, 0],
-                        ![0, e_pos]]
-  | P φ => Matrix.of ![![1, 0],
-                        ![0, Complex.exp (𝕚 * φ)]]
-
-end Gate1
-
-namespace Circ1
-
-noncomputable def toMatrix (c : List Gate1) : Mat2 :=
-  c.foldl (fun acc g => g.toMatrix * acc) 1
-
-end Circ1
-
-/-! ## Helper Lemmas -/
-
-namespace Gate1
-
-open Complex Matrix Real
-
-local notation "𝕚" => Complex.I
-
--- Helper: Identity matrix
-noncomputable def identityMatrix : Mat2 :=
-  Matrix.of ![![1, 0],
-              ![0, 1]]
-
--- Helper lemma: (1/√2)² + (1/√2)² = 1 (for Complex)
-lemma inv_sqrt_two_sum_complex :
-  let s : ℂ := (1 / Real.sqrt 2 : ℝ)
-  s * s + s * s = 1 := by
-  simp only [ofReal_div, ofReal_one]
-  have h : Real.sqrt 2 ≠ 0 := by
-    apply Real.sqrt_ne_zero'
-    norm_num
-  have h2 : (Real.sqrt 2 : ℂ) ≠ 0 := by
-    simp [h]
-  field_simp [h2]
-  rw [← ofReal_pow, Real.sq_sqrt (by norm_num : (0:ℝ) ≤ 2)]
+-- First, let's prove a helper lemma about 1/√2
+lemma inv_sqrt_two_squared : (inv_sqrt_2 : ℂ) * inv_sqrt_2 = 1/2 := by
+  unfold inv_sqrt_2
+  norm_cast
+  field_simp
+  rw [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 2)]
   norm_num
 
--- Helper lemma: (1/√2)² - (1/√2)² = 0 (for Complex)
-lemma inv_sqrt_two_cancel_complex :
-  let s : ℂ := (1 / Real.sqrt 2 : ℝ)
-  s * s - s * s = 0 := by
+-- Another helper: 2 * (1/√2)² = 1
+lemma two_inv_sqrt_two_squared : 2 * inv_sqrt_2 * inv_sqrt_2 = 1 := by
+  rw [mul_assoc, inv_sqrt_two_squared]
+  norm_num
+
+
+-- Helper for matrix element calculations
+lemma hadamard_mul_00 : (H.toMatrix * H.toMatrix) 0 0 = 1 := by
+  unfold toMatrix
+  simp [Matrix.mul_apply, Matrix.of_apply, Fin.sum_univ_two]
+  ring_nf
+  rw [← two_inv_sqrt_two_squared]
   ring
 
-/-! ## Main Theorem: Hadamard Involution -/
+lemma hadamard_mul_01 : (H.toMatrix * H.toMatrix) 0 1 = 0 := by
+  unfold toMatrix
+  simp [Matrix.mul_apply, Matrix.of_apply, Fin.sum_univ_two]
 
-/--
-Hadamard gate is self-inverse: H * H = I
-This proves that applying the Hadamard gate twice returns to the identity.
--/
-theorem hadamard_matrix_squared : H.toMatrix * H.toMatrix = identityMatrix := by
-  unfold toMatrix identityMatrix
+lemma hadamard_mul_10 : (H.toMatrix * H.toMatrix) 1 0 = 0 := by
+  unfold toMatrix
+  simp [Matrix.mul_apply, Matrix.of_apply, Fin.sum_univ_two]
+
+
+lemma hadamard_mul_11 : (H.toMatrix * H.toMatrix) 1 1 = 1 := by
+  unfold toMatrix
+  simp [Matrix.mul_apply, Matrix.of_apply, Fin.sum_univ_two]
+  ring_nf
+  rw [← two_inv_sqrt_two_squared]
+  ring
+
+-- Main theorem: H² = I
+theorem hadamard_squared_eq_id : H.toMatrix * H.toMatrix = I.toMatrix := by
   ext i j
-  fin_cases i <;> fin_cases j <;> {
-    simp only [Matrix.mul_apply, Fin.sum_univ_two, Matrix.of_apply]
-    norm_num
-    ring_nf
-    }
-  · -- Case (0, 0): top-left
-    convert inv_sqrt_two_sum_complex using 1
-    ring
-  · -- Case (0, 1): top-right
-    convert inv_sqrt_two_cancel_complex using 1
-    ring
-  · -- Case (1, 0): bottom-left
-    convert inv_sqrt_two_cancel_complex using 1
-    ring
-  · -- Case (1, 1): bottom-right
-    have h : Real.sqrt 2 ≠ 0 := by
-      apply Real.sqrt_ne_zero'
-      norm_num
-    have h2 : (Real.sqrt 2 : ℂ) ≠ 0 := by simp [h]
-    field_simp [h2]
-    rw [← ofReal_pow, Real.sq_sqrt (by norm_num : (0:ℝ) ≤ 2)]
-    norm_num
+  fin_cases i <;> fin_cases j
+  · exact hadamard_mul_00
+  · exact hadamard_mul_01
+  · exact hadamard_mul_10
+  · exact hadamard_mul_11
 
-end Gate1
+lemma identity_gate_matrix : Gate1.I.toMatrix = (1 : Mat2) := by
+  unfold Gate1.toMatrix
+  ext i j
+  simp only [Matrix.of_apply, Matrix.one_apply]
+  fin_cases i <;> fin_cases j <;> rfl
 
-/-! ## Circuit-Level Proofs -/
+-- Alternative formulation using the circuit semantics
+theorem hadamard_circuit_squared : Circ1.toMatrix [H, H] = 1 := by
+  unfold Circ1.toMatrix
+  simp [List.foldl, hadamard_squared_eq_id, identity_gate_matrix]
 
-namespace Circ1
-
-open Gate1
-
-/--
-Hadamard circuit involution: The circuit [H, H] equals the identity.
-This is the circuit-level version of the matrix theorem.
--/
-theorem hadamard_circuit_involution :
-  Circ1.toMatrix [Gate1.H, Gate1.H] = Gate1.identityMatrix := by
+-- We can also express this as: the circuit [H, H] is equivalent to the empty circuit
+theorem hadamard_twice_is_identity : Circ1.toMatrix [H, H] = Circ1.toMatrix [] := by
+  rw [hadamard_circuit_squared]
   unfold Circ1.toMatrix
   simp [List.foldl]
-  rw [Matrix.mul_one]
-  exact hadamard_matrix_squared
 
-/--
-Alternative formulation: H composed with H equals identity gate
--/
-theorem hadamard_self_inverse :
-  Circ1.toMatrix [Gate1.H, Gate1.H] = Gate1.I.toMatrix := by
-  rw [hadamard_circuit_involution]
-  rfl
-
-end Circ1
-
-/-! ## Additional Examples and Tests -/
-
-section Examples
-
-open Gate1
-
--- Verify the theorem type-checks
-#check Circ1.hadamard_circuit_involution
-#check Circ1.hadamard_self_inverse
-#check Gate1.hadamard_matrix_squared
-
--- Example: We can now use these theorems in other proofs
-example : Circ1.toMatrix [H, H, H, H] = Gate1.identityMatrix := by
-  unfold Circ1.toMatrix
-  simp [List.foldl]
-  rw [Matrix.mul_one]
-  -- (H * H) * (H * H) = I * I = I
-  rw [hadamard_matrix_squared, hadamard_matrix_squared]
-  simp [identityMatrix, Matrix.mul_one]
-
-end Examples
+#check hadamard_squared_eq_id
+#check hadamard_circuit_squared
+#check hadamard_twice_is_identity
 
 /-!
-## Proof Summary
+## Summary
 
-We proved that H * H = I at two levels:
-
-1. **Matrix level** (`hadamard_matrix_squared`):
-   Proves that the matrix representation of H multiplied by itself equals the identity matrix.
-
-2. **Circuit level** (`hadamard_circuit_involution`):
-   Proves that the circuit [H, H] has the same denotation as the identity.
+We've proven three equivalent formulations:
+1. `H.toMatrix * H.toMatrix = 1` - Direct matrix multiplication
+2. `Circ1.toMatrix [H, H] = 1` - Using circuit semantics
+3. `Circ1.toMatrix [H, H] = Circ1.toMatrix []` - Circuit equivalence
 
 The proof works by:
-- Expanding the matrix definitions
-- Using extensionality (`ext`) to prove equality entry-by-entry
-- Using `fin_cases` to handle each of the 4 matrix entries (2×2)
-- Applying algebraic simplification with helper lemmas about 1/√2
+- Computing each element of the product matrix
+- Using the fact that (1/√2)² + (1/√2)² = 1/2 + 1/2 = 1
+- And that (1/√2)² - (1/√2)² = 0
 
-This establishes that Hadamard is a self-inverse gate, a fundamental property
-used in many quantum algorithms.
+This demonstrates that the Hadamard gate is self-inverse, a fundamental property
+in quantum computing.
 -/
