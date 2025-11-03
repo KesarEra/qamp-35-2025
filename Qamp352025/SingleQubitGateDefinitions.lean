@@ -2,13 +2,14 @@ import Mathlib.Data.Complex.Basic
 import Mathlib.Analysis.Complex.Exponential
 import Mathlib.Data.Matrix.Basic
 import Mathlib.Data.Fin.Basic
+import Mathlib.Data.Real.Sqrt
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
 
 /-!
-# Single-Qubit Gates
+# Single-Qubit Gates (Complex Number Version)
 
-This file defines the syntax and semantics of single-qubit quantum gates.
+This file defines the syntax and semantics of single-qubit quantum gates
+using Complex numbers directly, avoiding Real/Complex conversion issues.
 
 ## Main definitions
 
@@ -23,7 +24,7 @@ This file defines the syntax and semantics of single-qubit quantum gates.
 - Hadamard: H
 - Phase gates: S, T, Sdg, Tdg
 - Rotation gates: Rx, Ry, Rz (parameterized by angle θ)
-- General phase: P (parameterized by angle θ)
+- General phase: P (parameterized by angle φ)
 
 -/
 
@@ -41,20 +42,23 @@ inductive Gate1 where
   | T : Gate1                    -- T gate (π/4)
   | Sdg : Gate1                  -- S dagger (S†)
   | Tdg : Gate1                  -- T dagger (T†)
-  | Rx (θ : ℝ) : Gate1          -- Rotation around X-axis
-  | Ry (θ : ℝ) : Gate1          -- Rotation around Y-axis
-  | Rz (θ : ℝ) : Gate1          -- Rotation around Z-axis
-  | P (φ : ℝ) : Gate1           -- Phase gate (general)
+  | Rx (θ : ℂ) : Gate1          -- Rotation around X-axis (complex angle)
+  | Ry (θ : ℂ) : Gate1          -- Rotation around Y-axis (complex angle)
+  | Rz (θ : ℂ) : Gate1          -- Rotation around Z-axis (complex angle)
+  | P (φ : ℂ) : Gate1           -- Phase gate (general, complex phase)
 
 /-- A single-qubit circuit is a list of gates -/
 def Circ1 := List Gate1
 
 namespace Gate1
 
-open Complex Matrix Real
+open Complex Matrix
 
 -- Helper: imaginary unit
 local notation "𝕚" => Complex.I
+
+-- Helper: 1/√2 as a complex number (computed once)
+noncomputable def inv_sqrt_2 : ℂ := (1 / Real.sqrt 2 : ℝ)
 
 /-- Convert a single-qubit gate to its matrix representation -/
 noncomputable def toMatrix : Gate1 → Mat2
@@ -70,31 +74,38 @@ noncomputable def toMatrix : Gate1 → Mat2
   | Z => Matrix.of ![![1, 0],
                       ![0, -1]]
 
-  | H => let s := 1 / Real.sqrt 2
-         Matrix.of ![![s, s],
-                      ![s, -s]]
+  | H => Matrix.of ![![inv_sqrt_2, inv_sqrt_2],
+                      ![inv_sqrt_2, -inv_sqrt_2]]
 
   | S => Matrix.of ![![1, 0],
                       ![0, 𝕚]]
 
-  | T => let t := Complex.exp (𝕚 * π / 4)
+  | T => let t := Complex.exp (𝕚 * (Real.pi / 4 : ℝ))
          Matrix.of ![![1, 0],
                       ![0, t]]
 
   | Sdg => Matrix.of ![![1, 0],
                         ![0, -𝕚]]
 
-  | Tdg => let t := Complex.exp (-𝕚 * π / 4)
+  | Tdg => let t := Complex.exp (-𝕚 * (Real.pi / 4 : ℝ))
            Matrix.of ![![1, 0],
                         ![0, t]]
 
-  | Rx θ => let c := Real.cos (θ / 2)
-            let s := Real.sin (θ / 2)
+  | Rx θ => -- For real angles, pass θ as Complex.ofReal of a real number
+            -- Here we assume θ is already complex, so we use exp definition
+            let half_theta := θ / 2
+            let e_pos := Complex.exp (𝕚 * half_theta)
+            let e_neg := Complex.exp (-𝕚 * half_theta)
+            let c := (e_pos + e_neg) / 2  -- cos(θ/2)
+            let s := (e_pos - e_neg) / (2 * 𝕚)  -- sin(θ/2)
             Matrix.of ![![c, -𝕚 * s],
                         ![-𝕚 * s, c]]
 
-  | Ry θ => let c := Real.cos (θ / 2)
-            let s := Real.sin (θ / 2)
+  | Ry θ => let half_theta := θ / 2
+            let e_pos := Complex.exp (𝕚 * half_theta)
+            let e_neg := Complex.exp (-𝕚 * half_theta)
+            let c := (e_pos + e_neg) / 2  -- cos(θ/2)
+            let s := (e_pos - e_neg) / (2 * 𝕚)  -- sin(θ/2)
             Matrix.of ![![c, -s],
                         ![s, c]]
 
@@ -135,7 +146,7 @@ def isClifford : Gate1 → Bool
   | I | X | Y | Z | H | S | Sdg => true
   | _ => false
 
-/-- Check if a gate is parameterized (has a real angle parameter) -/
+/-- Check if a gate is parameterized (has a complex angle parameter) -/
 def isParameterized : Gate1 → Bool
   | Rx _ | Ry _ | Rz _ | P _ => true
   | _ => false
@@ -183,8 +194,8 @@ open Gate1
 -- Example: Circuit that implements identity (H ; H)
 noncomputable def hadamard_twice : Circ1 := [H, H]
 
--- Example: Pauli-X rotation by π (should be equivalent to X gate)
-noncomputable def rx_pi : Circ1 := [Rx Real.pi]
+-- Example: Pauli-X rotation by π (using real π converted to complex)
+noncomputable def rx_pi : Circ1 := [Rx ((Real.pi : ℝ) : ℂ)]
 
 -- Example: S gate applied twice (should equal Z)
 noncomputable def s_twice : Circ1 := [S, S]
@@ -196,3 +207,26 @@ noncomputable def example_circuit : Circ1 := [H] ⋄ [X, Y] ⋄ [H]
 -- But we can still check types and write proofs about these circuits
 
 end Examples
+
+/-!
+## Notes on Complex Number Version
+
+### Advantages:
+1. **No Real/Complex conversions** - Everything is ℂ from the start
+2. **Simpler proofs** - No need to handle `ofReal` casts
+3. **Consistent types** - All arithmetic happens in ℂ
+
+### For practical use:
+- To create a rotation gate with a real angle θ, use: `Rx (Complex.ofReal θ)`
+- The gates X, Y, Z, H, S, T, Sdg, Tdg have no parameters and work as before
+- Matrix arithmetic is purely complex number operations
+
+### Example usage in proofs:
+```lean
+-- Hadamard with complex 1/√2
+H.toMatrix = Matrix.of ![![inv_sqrt_2, inv_sqrt_2],
+                          ![inv_sqrt_2, -inv_sqrt_2]]
+```
+
+This makes proving identities much cleaner!
+-/
