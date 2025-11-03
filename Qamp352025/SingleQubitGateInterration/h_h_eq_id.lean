@@ -60,12 +60,6 @@ theorem hadamard_squared_eq_id : H.toMatrix * H.toMatrix = I.toMatrix := by
   · exact hadamard_mul_10
   · exact hadamard_mul_11
 
-lemma identity_gate_matrix : Gate1.I.toMatrix = (1 : Mat2) := by
-  unfold Gate1.toMatrix
-  ext i j
-  simp only [Matrix.of_apply, Matrix.one_apply]
-  fin_cases i <;> fin_cases j <;> rfl
-
 -- Alternative formulation using the circuit semantics
 theorem hadamard_circuit_squared : Circ1.toMatrix [H, H] = 1 := by
   unfold Circ1.toMatrix

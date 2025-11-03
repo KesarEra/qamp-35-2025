@@ -151,6 +151,12 @@ def isParameterized : Gate1 → Bool
   | Rx _ | Ry _ | Rz _ | P _ => true
   | _ => false
 
+lemma identity_gate_matrix : Gate1.I.toMatrix = (1 : Mat2) := by
+  unfold Gate1.toMatrix
+  ext i j
+  simp only [Matrix.of_apply, Matrix.one_apply]
+  fin_cases i <;> fin_cases j <;> rfl
+
 end Gate1
 
 namespace Circ1

@@ -37,12 +37,6 @@ theorem pauli_z_squared_eq_id : Z.toMatrix * Z.toMatrix = Gate1.I.toMatrix := by
   · exact pauli_z_mul_10
   · exact pauli_z_mul_11
 
-lemma identity_gate_matrix : Gate1.I.toMatrix = (1 : Mat2) := by
-  unfold Gate1.toMatrix
-  ext i j
-  simp only [Matrix.of_apply, Matrix.one_apply]
-  fin_cases i <;> fin_cases j <;> rfl
-
 -- Alternative formulation using circuit semantics
 theorem pauli_z_circuit_squared : Circ1.toMatrix [Z, Z] = 1 := by
   unfold Circ1.toMatrix
