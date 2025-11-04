@@ -4,6 +4,9 @@ import Mathlib.Data.Complex.Basic
 import Mathlib.Data.Real.Sqrt
 import Mathlib.Tactic
 
+set_option trace.Meta.isDefEq true in
+set_option trace.Meta.synthInstance true in
+
 /-!
 # Proof that H · H = I using SingleQubitGateDefinitions
 
@@ -59,12 +62,6 @@ theorem hadamard_squared_eq_id : H.toMatrix * H.toMatrix = I.toMatrix := by
   · exact hadamard_mul_01
   · exact hadamard_mul_10
   · exact hadamard_mul_11
-
-lemma identity_gate_matrix : Gate1.I.toMatrix = (1 : Mat2) := by
-  unfold Gate1.toMatrix
-  ext i j
-  simp only [Matrix.of_apply, Matrix.one_apply]
-  fin_cases i <;> fin_cases j <;> rfl
 
 -- Alternative formulation using the circuit semantics
 theorem hadamard_circuit_squared : Circ1.toMatrix [H, H] = 1 := by

@@ -5,6 +5,9 @@ import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Real.Sqrt
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 
+set_option trace.Meta.isDefEq true in
+set_option trace.Meta.synthInstance true in
+
 /-!
 # Single-Qubit Gates (Complex Number Version)
 
@@ -150,6 +153,12 @@ def isClifford : Gate1 → Bool
 def isParameterized : Gate1 → Bool
   | Rx _ | Ry _ | Rz _ | P _ => true
   | _ => false
+
+lemma identity_gate_matrix : Gate1.I.toMatrix = (1 : Mat2) := by
+  unfold Gate1.toMatrix
+  ext i j
+  simp only [Matrix.of_apply, Matrix.one_apply]
+  fin_cases i <;> fin_cases j <;> rfl
 
 end Gate1
 
