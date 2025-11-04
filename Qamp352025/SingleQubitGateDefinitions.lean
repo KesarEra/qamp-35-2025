@@ -5,6 +5,9 @@ import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Real.Sqrt
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 
+set_option trace.Meta.isDefEq true in
+set_option trace.Meta.synthInstance true in
+
 /-!
 # Single-Qubit Gates (Complex Number Version)
 

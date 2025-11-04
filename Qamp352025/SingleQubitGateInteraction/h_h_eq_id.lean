@@ -4,6 +4,9 @@ import Mathlib.Data.Complex.Basic
 import Mathlib.Data.Real.Sqrt
 import Mathlib.Tactic
 
+set_option trace.Meta.isDefEq true in
+set_option trace.Meta.synthInstance true in
+
 /-!
 # Proof that H · H = I using SingleQubitGateDefinitions
 

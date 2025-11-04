@@ -3,8 +3,10 @@ import Mathlib.Data.Complex.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Tactic
 
-open Complex
+set_option trace.Meta.isDefEq true in
+set_option trace.Meta.synthInstance true in
 
+open Complex
 namespace CoreTypes
 
 -- Basic type aliases
