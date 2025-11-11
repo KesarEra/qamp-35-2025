@@ -26,7 +26,9 @@ def dagger {m n : Nat} (A : Mat m n) : Mat n m :=
 lemma dagger_Id (n : Nat) : dagger (Id n) = Id n := by
   funext i j
   simp [Id, dagger]
-  sorry
+  by_cases h : i = j
+  · simp [h]
+  · simp [h, Ne.symm h]
 
 #check dagger_Id
 #eval Id 2 (⟨0, by decide⟩) (⟨0, by decide⟩)  -- should print 1
