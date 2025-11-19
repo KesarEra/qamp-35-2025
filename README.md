@@ -8,6 +8,11 @@ The project will focus on a practical subset of OpenQASM (single-qubit gates, co
 
 See original proposal: https://github.com/qiskit-advocate/qamp-2025/issues/35
 
+## Team
+- Omar Shehab (Staff Research Scientist, IBM Thomas J Watson Research Center)
+- Kazi Muktadir Ahmed (Qiskit Advocate)
+- Kesar Valera (Qiskit Advocate)
+
 ## Deliverables
 
 ### Primary Deliverables:
