@@ -1,8 +1,6 @@
-import QuantumInfo.Finite.Qubit.Basic
-import QuantumInfo.Finite.CPTPMap
-import SingleQubitCircuit
+import Qamp352025.QuantumGates
+import Qamp352025.SingleQubitCircuit
 
--- set_option diagnostics true
 set_option maxHeartbeats 1000000
 
 /-!
@@ -27,7 +25,7 @@ framework to handle entangling operations like CNOT, SWAP, and CZ gates.
 
 ## Proven Identities
 
-- `cnotTwiceId`: Testing single-qubit gate tensor products
+- `tensorProductTest`: Testing single-qubit gate tensor products
 - `czTwice`: Proves CZ² = CNOT⁴ (CZ applied twice equals CNOT four times)
 - `swapTwice`: (Work in progress) SWAP² = I
 -/
@@ -42,7 +40,7 @@ deriving Repr, DecidableEq
 abbrev TwoQubitCircuit := List TwoQubitGate
 
 namespace TwoQubitGate
-open Matrix BigOperators
+open Matrix
 
 def toString : TwoQubitGate → String
   | .single 0 g => s!"q[0]: {repr g}"
@@ -87,7 +85,7 @@ noncomputable def circuitsEq (c₁ c₂ : TwoQubitCircuit) : Prop :=
   (evalCircuit c₁).val = (evalCircuit c₂).val
 
 /-- Example: Testing single-qubit gates on wire 1 (tensor product behavior) -/
-lemma cnotTwiceId : circuitsEq [.single 1 .X, .single 1 .X] [.single 1 .X, .single 1 .X] = true := by
+lemma tensorProductTest : circuitsEq [.single 1 .X, .single 1 .X] [.single 1 .X, .single 1 .X] = true := by
   unfold circuitsEq evalCircuit TwoQubitGate.toUnitary
   norm_num [basisStates, List.all, List.product, Qubit.CNOT]
 
@@ -97,8 +95,8 @@ lemma czTwice : circuitsEq [.cz, .cz] [.cnot, .cnot, .cnot, .cnot] = true := by
   norm_num [basisStates, List.all, List.product, Qubit.CNOT]
 
 /-- SWAP is self-inverse (SWAP² = I) - Work in progress -/
--- lemma swapTwice : circuitsEq [.swap, .swap] [.cnot, .cnot] = true := by
+-- lemma swapTwice : circuitsEq [.swap, .swap] [] = true := by
 --   unfold circuitsEq evalCircuit TwoQubitGate.toUnitary
---   norm_num [basisStates, List.all, List.product, Qubit.CNOT]
+--   norm_num [basisStates, List.all, List.product]
 
 end TwoQubitCircuit
