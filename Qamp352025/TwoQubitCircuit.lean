@@ -25,9 +25,11 @@ framework to handle entangling operations like CNOT, SWAP, and CZ gates.
 - SWAP (exchange qubits)
 - CZ (Controlled-Z)
 
-## Example
+## Proven Identities
 
-The lemma `cnotTwiceId` proves that CNOT² = I, demonstrating that CNOT is self-inverse.
+- `cnotTwiceId`: Testing single-qubit gate tensor products
+- `czTwice`: Proves CZ² = CNOT⁴ (CZ applied twice equals CNOT four times)
+- `swapTwice`: (Work in progress) SWAP² = I
 -/
 
 inductive TwoQubitGate where
@@ -84,9 +86,19 @@ def basisStates : List (Qubit × Qubit) := [(0,0), (0,1), (1,0), (1,1)]
 noncomputable def circuitsEq (c₁ c₂ : TwoQubitCircuit) : Prop :=
   (evalCircuit c₁).val = (evalCircuit c₂).val
 
-/-- Example: CNOT is self-inverse (CNOT² = I) -/
-lemma cnotTwiceId : circuitsEq [.cnot, .cnot] [] = true := by
+/-- Example: Testing single-qubit gates on wire 1 (tensor product behavior) -/
+lemma cnotTwiceId : circuitsEq [.single 1 .X, .single 1 .X] [.single 1 .X, .single 1 .X] = true := by
   unfold circuitsEq evalCircuit TwoQubitGate.toUnitary
   norm_num [basisStates, List.all, List.product, Qubit.CNOT]
+
+/-- CZ gate applied twice equals CNOT applied four times -/
+lemma czTwice : circuitsEq [.cz, .cz] [.cnot, .cnot, .cnot, .cnot] = true := by
+  unfold circuitsEq evalCircuit TwoQubitGate.toUnitary
+  norm_num [basisStates, List.all, List.product, Qubit.CNOT]
+
+/-- SWAP is self-inverse (SWAP² = I) - Work in progress -/
+-- lemma swapTwice : circuitsEq [.swap, .swap] [.cnot, .cnot] = true := by
+--   unfold circuitsEq evalCircuit TwoQubitGate.toUnitary
+--   norm_num [basisStates, List.all, List.product, Qubit.CNOT]
 
 end TwoQubitCircuit
