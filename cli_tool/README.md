@@ -10,7 +10,7 @@ Parse single-qubit QASM circuits → Generate Lean code → Verify proofs.
 
 ### Prerequisites
 ```bash
-pip install -r requirements.txt  # (empty for now)
+# Pure Python 3 - NO dependencies!
 # Lean 4 installed (for verification)
 ```
 
@@ -95,7 +95,7 @@ Options:
 
 ```
 cli_tool/
-├── qasm_to_lean.py     # Main converter
+├── qasm_to_lean.py     # Main converter (pure Python)
 ├── README.md           # This file
 └── examples/           # Sample QASM files
     ├── hh.qasm
@@ -105,10 +105,10 @@ cli_tool/
 
 ## 🎯 Minimal Design
 
-- **No dependencies** (pure Python 3)
-- **No installation** (just run the script)
-- **Single file** (7621 bytes)
-- **Self-contained** verification
+- ✅ **Zero dependencies** (pure Python 3)
+- ✅ **No installation** (just run)
+- ✅ **Single file** (7621 bytes)
+- ✅ **Self-contained** verification
 
 ## 🔗 Integration
 
@@ -120,4 +120,4 @@ python qasm_to_lean.py ... -o my_proof.lean
 lake build my_proof.lean
 ```
 
-**Status**: ✅ Ready to use | **Size**: Minimal
+**Status**: ✅ Ready to test | **Size**: Minimal | **Dependencies**: None
