@@ -4,7 +4,7 @@
 
 **Team Members**: Kesar Era (Kazi Muktadir Ahmed)
 
-**Mentors**: [To be added]
+**Mentors**: Omar Shehab
 
 ---
 
