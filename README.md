@@ -2,7 +2,7 @@
 
 **Project**: Proving quantum circuit equivalences using the Lean 4 theorem prover
 
-**Team Members**: Kesar Era (Kazi Muktadir Ahmed)
+**Team Members**: Kesar Era, Kazi Muktadir Ahmed
 
 **Mentors**: Omar Shehab
 
