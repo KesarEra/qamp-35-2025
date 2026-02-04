@@ -1,36 +1,123 @@
-# Quantum Circuit Equivalence CLI Tool
+# QASM to Lean Proof Generator
 
-This directory will contain the Python CLI tool for checking quantum circuit equivalences using the Lean prover.
+Minimal CLI tool to convert OpenQASM 3.0 circuits to Lean 4 equivalence proofs.
 
-## Planned Structure
+## 🎯 Purpose
+
+Parse single-qubit QASM circuits → Generate Lean code → Verify proofs.
+
+## 🚀 Quick Start
+
+### Prerequisites
+```bash
+pip install -r requirements.txt  # (empty for now)
+# Lean 4 installed (for verification)
+```
+
+### Usage
+
+```bash
+# Generate Lean code only
+python qasm_to_lean.py circuit1.qasm circuit2.qasm -l myProof -o proof.lean
+
+# Generate + verify
+python qasm_to_lean.py hh.qasm id.qasm -l hTwiceIsId --verify
+
+# Verify in Lean project
+python qasm_to_lean.py hh.qasm id.qasm --verify --lean-project ../
+```
+
+## 📖 Examples
+
+### 1. H² = I
+**hh.qasm**:
+```qasm
+OPENQASM 3;
+include "stdgates.inc";
+qubit q;
+h q;
+h q;
+```
+
+**id.qasm**:
+```qasm
+OPENQASM 3;
+include "stdgates.inc";
+qubit q;
+```
+
+```bash
+python qasm_to_lean.py hh.qasm id.qasm -l hTwiceIsId --verify
+```
+
+**Generated Lean**:
+```lean
+def circuit1 : Circuit := [.H, .H]
+def circuit2 : Circuit := []
+lemma hTwiceIsId : circuitsEq circuit1 circuit2 = true := by
+  unfold circuitsEq evalCircuit Gate.toUnitary
+  norm_num [basisStates, List.all]
+```
+
+## 🎛️ CLI Options
+
+```
+python qasm_to_lean.py CIRCUIT1.QASM CIRCUIT2.QASM [OPTIONS]
+
+Options:
+  -l, --lemma NAME          Lemma name (default: equivalence_check)
+  -o, --output FILE         Output file (default: stdout)
+  --verify                  Run Lean verification
+  --lean-project DIR        Lean project directory
+  -n, --namespace NS        Lean namespace (default: SingleQubitCircuit)
+```
+
+## 🔧 Supported Gates
+
+| QASM | Lean |
+|------|------|
+| `x`  | `X`  |
+| `y`  | `Y`  |
+| `z`  | `Z`  |
+| `h`  | `H`  |
+| `s`  | `S`  |
+| `t`  | `T`  |
+| `id` | `I`  |
+| `sdg`| `Sdg`|
+| `tdg`| `Tdg`|
+
+## 🧪 Verification
+
+✅ **Success**: `✓ Proof verified successfully by Lean! 🎉`
+❌ **Failure**: Shows Lean error + suggestions
+
+## 📁 File Structure
 
 ```
 cli_tool/
-├── src/
-│   ├── __init__.py
-│   ├── main.py           # CLI entry point
-│   ├── parser.py         # Circuit notation parser
-│   ├── lean_interface.py # Interface with Lean
-│   └── utils.py          # Utility functions
-├── tests/
-│   └── test_*.py         # Unit tests
-├── requirements.txt      # Python dependencies
-├── setup.py              # Package setup
-└── README.md             # This file
+├── qasm_to_lean.py     # Main converter
+├── README.md           # This file
+└── examples/           # Sample QASM files
+    ├── hh.qasm
+    ├── id.qasm
+    └── ss_z.qasm
 ```
 
-## Usage (To Be Implemented)
+## 🎯 Minimal Design
+
+- **No dependencies** (pure Python 3)
+- **No installation** (just run the script)
+- **Single file** (7621 bytes)
+- **Self-contained** verification
+
+## 🔗 Integration
+
+Works with `Qamp352025/SingleQubitCircuit.lean`:
 
 ```bash
-python -m cli_tool.main "H H" "I"
+# Generate proof → Copy to Lean project → lake build
+python qasm_to_lean.py ... -o my_proof.lean
+lake build my_proof.lean
 ```
 
-This will verify that applying the Hadamard gate twice is equivalent to the identity.
-
-## Features (Planned)
-
-- Parse circuit notation (e.g., "H X Z", "CNOT", etc.)
-- Generate Lean code for circuit equivalence checking
-- Execute Lean prover
-- Return results in human-readable format
-- Support for single-qubit and multi-qubit gates
+**Status**: ✅ Ready to use | **Size**: Minimal
