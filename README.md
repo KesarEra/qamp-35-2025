@@ -12,10 +12,6 @@
 
 This project explores the formal verification of quantum circuit equivalences using Lean 4. We build on the [Lean-QuantumInfo](https://github.com/Timeroot/Lean-QuantumInfo) library to create tools for automatically checking whether two quantum circuits are equivalent.
 
-## 🏆 Key Achievement: Two-Qubit Circuits
-
-We've successfully implemented and verified **2-qubit quantum circuits**, including entangling gates like CNOT, SWAP, and CZ. This represents a major milestone in scaling from single-qubit to multi-qubit quantum computing proofs.
-
 ## 📁 Repository Structure
 
 ```
@@ -60,10 +56,6 @@ qamp-35-2025/
    - Implements tensor product lifting for single-qubit gates
    - Provides 4×4 unitary matrix evaluation
    - Includes circuit equivalence checking
-   - Contains proven identities:
-     - `tensorProductTest`: Tensor product behavior
-     - `czTwice`: CZ² = CNOT⁴
-     - `swapTwice`: SWAP² = I (work in progress)
 
 ## 🚀 Quick Start
 
